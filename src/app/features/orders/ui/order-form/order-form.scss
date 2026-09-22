@@ -1,0 +1,86 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 18rem;
+}
+
+label,
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-hidden {
+  display: none;
+}
+
+.price {
+  padding: 0.4rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--row-hover);
+  border: 1px solid var(--row-hover);
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+input,
+select {
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  color: inherit;
+  background: var(--row);
+  border: 1px solid var(--row-hover);
+  border-radius: 4px;
+}
+
+option {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+fieldset {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--row-hover);
+  border-radius: 4px;
+}
+
+fieldset label {
+  flex-direction: row;
+  align-items: center;
+}
+
+legend {
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--profit-negative);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  color: inherit;
+  background: var(--row);
+  border: 1px solid var(--row-hover);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--row-hover);
+}
+
+button[type='submit'] {
+  font-weight: 600;
+}

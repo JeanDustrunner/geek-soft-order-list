@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--bg);
+  border-bottom: 2px solid var(--row-hover);
+}
+
+tbody + tbody {
+  border-top: 8px solid transparent;
+}
+
+.add-order {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  color: inherit;
+  background: var(--row);
+  border: 1px solid var(--row-hover);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-order:hover {
+  background: var(--row-hover);
+}
+
+dialog {
+  padding: 1.5rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--row-hover);
+  border-radius: 8px;
+}
+
+dialog::backdrop {
+  background: rgba(14, 15, 26, 0.5);
+}

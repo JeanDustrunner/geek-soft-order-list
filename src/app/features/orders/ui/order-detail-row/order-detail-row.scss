@@ -1,0 +1,12 @@
+:host {
+  background: var(--row);
+  border-top: 1px solid var(--row-hover);
+}
+
+:host(.alt) {
+  background: var(--row-alt);
+}
+
+:host:hover {
+  background: var(--row-hover);
+}

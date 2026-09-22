@@ -1,0 +1,21 @@
+import { DecimalPipe } from "@angular/common";
+import { Component, input, output } from "@angular/core";
+import { SymbolGroup } from "../../domain/models";
+import { CloseButton } from "../close-button/close-button";
+import { ProfitClassPipe } from "../profit-class.pipe";
+
+
+@Component({
+    selector: 'tr[appOrderGroupRow]',
+    imports: [DecimalPipe, ProfitClassPipe, CloseButton],
+    host: {class: 'group-row', '(click)': 'toggleRequested.emit()', '[class.alt]': 'alternate()'},
+    templateUrl: './order-group-row.html',
+    styleUrl: './order-group-row.scss'
+})
+export class OrderGroupRow {
+    readonly group = input.required<SymbolGroup>();
+    readonly expanded = input(false);
+    readonly alternate = input(false);
+    readonly toggleRequested = output<void>();
+    readonly closeRequested = output<void>();
+}

@@ -1,0 +1,60 @@
+@if (store.error(); as error) {
+  <p role="alert">Failed to fetch data: {{ error.message }}</p>
+} @else if (store.isLoading()) {
+  <p>Loading...</p>
+} @else {
+    <button class="add-order" type="button" (click)="dialog.showModal(); formOpen.set(true)">
+      Add new order
+    </button>
+
+    <dialog #dialog (close)="onFormClosed()">
+        @if (formOpen()) {
+            <app-order-form
+                [symbols]="store.formSymbols()"
+                [quotes]="store.quotes()"
+                (symbolSelected)="store.watchSymbol($event)"
+                (submitted)="addOrder($event); dialog.close()"
+                (cancelled)="dialog.close()"
+            />
+        }
+    </dialog>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col"><span class="visually-hidden">Expanded</span></th>
+        <th scope="col">Symbol</th>
+        <th scope="col">Count</th>
+        <th scope="col">Order ID</th>
+        <th scope="col">Side</th>
+        <th scope="col">Size</th>
+        <th scope="col">Open Time</th>
+        <th scope="col">Open Price</th>
+        <th scope="col">Swap</th>
+        <th scope="col">Profit</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    @for (group of store.groups(); track group.symbol; let groupIndex = $index) {
+      <tbody>
+        <tr
+          appOrderGroupRow
+          [group]="group"
+          [expanded]="expanded().has(group.symbol)"
+          [alternate]="groupIndex % 2 === 1"
+          (toggleRequested)="toggle(group.symbol)"
+          (closeRequested)="closeGroup(group.symbol)"
+        ></tr>
+        @if (expanded().has(group.symbol)) {
+          @for (row of group.rows; track row.order.id) {
+            <tr
+              appOrderDetailRow
+              [row]="row"
+              [alternate]="groupIndex % 2 === 1"
+              (closeRequested)="closeOrder(row.order.id)"
+            ></tr>
+          }
+        }
+      </tbody>
+    }
+  </table>
+}

@@ -1,0 +1,56 @@
+<form (submit)="submit($event)" novalidate>
+  <div class="field">
+    <label for="symbol">Symbol</label>
+    <input
+      id="symbol"
+      list="symbol-options"
+      autocomplete="off"
+      placeholder="Search symbol…"
+      [formField]="orderForm.symbol"
+      (change)="onSymbolChange($any($event.target).value)"
+    />
+    <datalist id="symbol-options">
+      @for (s of symbols(); track s) {
+        <option [value]="s"></option>
+      }
+    </datalist>
+  </div>
+  @if (orderForm.symbol().touched() && orderForm.symbol().errors().length) {
+    <p class="error">Select a symbol from the list.</p>
+  }
+
+  <fieldset>
+    <legend>Side</legend>
+    <label><input type="radio" [formField]="orderForm.side" value="BUY" /> BUY</label>
+    <label><input type="radio" [formField]="orderForm.side" value="SELL" /> SELL</label>
+  </fieldset>
+
+  <label>
+    Size
+    <input type="number" [formField]="orderForm.size" step="any" />
+  </label>
+  @if (orderForm.size().touched() && orderForm.size().errors().length) {
+    <p class="error">Size must be greater than 0.</p>
+  }
+
+  <div class="field">
+    <span class="field-label" id="openPriceLabel">Open price</span>
+    <output class="price" aria-labelledby="openPriceLabel">
+      @if (!hasSymbol()) {
+        Select symbol first
+      } @else if (priceLoading()) {
+        Loading price…
+      } @else {
+        {{ model().openPrice | number: '1.2-5' }}
+      }
+    </output>
+  </div>
+  @if (orderForm.openPrice().touched() && orderForm.openPrice().errors().length) {
+    <p class="error">Open price is not available yet — waiting for a quote.</p>
+  }
+
+  <input class="field-hidden" type="datetime-local" [formField]="orderForm.openTime" step="1" />
+
+  <button type="submit">Add</button>
+  <button type="button" (click)="cancelled.emit()">Cancel</button>
+</form>
