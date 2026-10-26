@@ -1,5 +1,6 @@
-import { Component, input, output } from '@angular/core';
-import { OrderRow } from '../../domain/models';
+import { Component, computed, input, output } from '@angular/core';
+import { Order } from '../../domain/models';
+import { calcProfit } from '../../domain/profit';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { CloseButton } from '../close-button/close-button';
 import { ProfitClassPipe } from '../profit-class.pipe';
@@ -12,7 +13,10 @@ import { ProfitClassPipe } from '../profit-class.pipe';
   styleUrl: './order-detail-row.scss',
 })
 export class OrderDetailRow {
-  readonly row = input.required<OrderRow>();
+  readonly order = input.required<Order>();
+  readonly bid = input<number | undefined>();
   readonly alternate = input(false);
   readonly closeRequested = output<void>();
+
+  protected readonly profit = computed(() => calcProfit(this.order(), this.bid()));
 }

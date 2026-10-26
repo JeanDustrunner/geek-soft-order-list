@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrderForm } from './order-form';
-import { NewOrderInput, Quote } from '../../domain/models';
-import { aQuote, quotesFor } from '../../testing/builders';
+import { NewOrderInput } from '../../domain/models';
 
 describe('OrderForm', () => {
   let fixture: ComponentFixture<OrderForm>;
@@ -17,8 +16,8 @@ describe('OrderForm', () => {
       (element as HTMLElement).textContent?.trim(),
     );
 
-  const setQuotes = async (quotes: Record<string, Quote>) => {
-    fixture.componentRef.setInput('quotes', quotes);
+  const setBid = async (bid: number | undefined) => {
+    fixture.componentRef.setInput('currentBid', bid);
     await fixture.whenStable();
   };
 
@@ -46,7 +45,6 @@ describe('OrderForm', () => {
     TestBed.configureTestingModule({ imports: [OrderForm] });
     fixture = TestBed.createComponent(OrderForm);
     fixture.componentRef.setInput('symbols', ['BTCUSD', 'ETHUSD', 'EURPLN']);
-    fixture.componentRef.setInput('quotes', {});
     submitted = [];
     fixture.componentInstance.submitted.subscribe((order) => submitted.push(order));
     await fixture.whenStable();
@@ -98,32 +96,33 @@ describe('OrderForm', () => {
     it('shows the current bid once it arrives (R10b)', async () => {
       await pickSymbol('ETHUSD');
 
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
 
       expect(priceText()).toBe('2,134.69');
     });
 
     it('follows the market while the form is open', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
 
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2200.0 })));
+      await setBid(2200.0);
 
       expect(priceText()).toBe('2,200.00');
     });
 
-    it('never carries the price of one symbol over to another', async () => {
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+    it('waits again once the parent has no bid for a newly chosen symbol', async () => {
       await pickSymbol('ETHUSD');
+      await setBid(2134.69);
 
       await pickSymbol('BTCUSD');
+      await setBid(undefined);
 
       expect(priceText()).toBe('Loading price…');
     });
 
     it('is not editable, because the open price of a market order comes from the market', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
 
       expect(query('.price').tagName.toLowerCase()).toBe('output');
     });
@@ -158,7 +157,7 @@ describe('OrderForm', () => {
 
     it('refuses a size of zero (R10d)', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('0');
 
       await submit();
@@ -168,7 +167,7 @@ describe('OrderForm', () => {
 
     it('refuses a negative size (R10d)', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('-1');
 
       await submit();
@@ -178,7 +177,7 @@ describe('OrderForm', () => {
 
     it('refuses an empty size (R10d)', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('');
 
       await submit();
@@ -196,13 +195,13 @@ describe('OrderForm', () => {
   describe('submitting', () => {
     const fillValidOrder = async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('0.5');
     };
 
     it('accepts the smallest positive size', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('0.01');
 
       await submit();
@@ -212,7 +211,7 @@ describe('OrderForm', () => {
 
     it('accepts a very large size', async () => {
       await pickSymbol('ETHUSD');
-      await setQuotes(quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2134.69 })));
+      await setBid(2134.69);
       await typeSize('1000000');
 
       await submit();

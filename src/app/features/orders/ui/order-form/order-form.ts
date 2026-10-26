@@ -1,6 +1,6 @@
 import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { OrderFormModel, Quote, Side, NewOrderInput } from '../../domain/models';
+import { OrderFormModel, Side, NewOrderInput } from '../../domain/models';
 import { form, required, validate, FormField, min } from '@angular/forms/signals';
 
 @Component({
@@ -11,7 +11,7 @@ import { form, required, validate, FormField, min } from '@angular/forms/signals
 })
 export class OrderForm {
   readonly symbols = input.required<readonly string[]>();
-  readonly quotes = input.required<Readonly<Record<string, Quote>>>();
+  readonly currentBid = input<number | undefined>();
   readonly submitted = output<NewOrderInput>();
   readonly cancelled = output<void>();
   readonly symbolSelected = output<string>();
@@ -27,7 +27,7 @@ export class OrderForm {
   protected readonly hasSymbol = computed(() => this.symbols().includes(this.model().symbol));
 
   protected readonly priceLoading = computed(
-    () => this.hasSymbol() && this.quotes()[this.model().symbol] === undefined,
+    () => this.hasSymbol() && this.currentBid() === undefined,
   );
 
   protected readonly orderForm = form(this.model, (path) => {
@@ -45,8 +45,8 @@ export class OrderForm {
 
   constructor() {
     effect(() => {
-      const { symbol, openPrice } = this.model();
-      const bid = this.quotes()[symbol]?.bid;
+      const { openPrice } = this.model();
+      const bid = this.currentBid();
       if (bid !== undefined && bid !== openPrice) {
         this.model.update((model) => ({ ...model, openPrice: bid }));
       }

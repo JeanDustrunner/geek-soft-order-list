@@ -1,4 +1,4 @@
-import { ContractTypeDto, InstrumentDto, Order, OrderDto, Quote, Side } from '../domain/models';
+import { ContractTypeDto, InstrumentDto, Order, OrderDto, Side } from '../domain/models';
 
 export function anOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -25,14 +25,6 @@ export function anOrderDto(overrides: Partial<OrderDto> = {}): OrderDto {
     swap: 0,
     ...overrides,
   };
-}
-
-export function aQuote(overrides: Partial<Quote> = {}): Quote {
-  return { symbol: 'BTCUSD', bid: 110, ask: 111, time: 1770283819, ...overrides };
-}
-
-export function quotesFor(...quotes: readonly Quote[]): Record<string, Quote> {
-  return Object.fromEntries(quotes.map((quote) => [quote.symbol, quote]));
 }
 
 export function anInstrument(overrides: Partial<InstrumentDto> = {}): InstrumentDto {

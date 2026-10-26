@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { SymbolGroup } from '../../domain/models';
+import { sumProfit } from '../../domain/profit';
 import { CloseButton } from '../close-button/close-button';
 import { ProfitClassPipe } from '../profit-class.pipe';
 
@@ -13,8 +14,11 @@ import { ProfitClassPipe } from '../profit-class.pipe';
 })
 export class OrderGroupRow {
   readonly group = input.required<SymbolGroup>();
+  readonly bid = input<number | undefined>();
   readonly expanded = input(false);
   readonly alternate = input(false);
   readonly toggleRequested = output<void>();
   readonly closeRequested = output<void>();
+
+  protected readonly profit = computed(() => sumProfit(this.group().orders, this.bid()));
 }

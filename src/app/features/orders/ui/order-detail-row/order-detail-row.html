@@ -2,29 +2,29 @@
 <td></td>
 <td></td>
 <td>
-  {{ row().order.id }}
+  {{ order().id }}
 </td>
 <td>
-  {{ row().order.side }}
+  {{ order().side }}
 </td>
 <td>
-  {{ row().order.size | number: '1.0-2' }}
+  {{ order().size | number: '1.0-2' }}
 </td>
 <td>
-  {{ row().order.openTime | date: 'dd.MM.yyyy HH:mm:ss' }}
+  {{ order().openTime | date: 'dd.MM.yyyy HH:mm:ss' }}
 </td>
 <td>
-  {{ row().order.openPrice | number: '1.2-5' }}
+  {{ order().openPrice | number: '1.2-5' }}
 </td>
 <td>
-  {{ row().order.swap | number: '1.2-2' }}
+  {{ order().swap | number: '1.2-2' }}
 </td>
-<td [class]="row().profit | profitClass">
-  {{ (row().profit | number: '1.2-2') ?? '—' }}
+<td [class]="profit() | profitClass">
+  {{ (profit() | number: '1.2-2') ?? '—' }}
 </td>
 <td>
   <app-close-button
-    [label]="'Close order ' + row().order.id"
+    [label]="'Close order ' + order().id"
     (closeRequested)="closeRequested.emit()"
   />
 </td>

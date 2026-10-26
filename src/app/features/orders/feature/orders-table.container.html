@@ -11,7 +11,7 @@
     @if (formOpen()) {
       <app-order-form
         [symbols]="store.formSymbols()"
-        [quotes]="store.quotes()"
+        [currentBid]="store.watchedBid()"
         (symbolSelected)="store.watchSymbol($event)"
         (submitted)="addOrder($event); dialog.close()"
         (cancelled)="dialog.close()"
@@ -35,22 +35,25 @@
       </tr>
     </thead>
     @for (group of store.groups(); track group.symbol; let groupIndex = $index) {
+      @let bid = store.bidOf(group.symbol)();
       <tbody>
         <tr
           app-order-group-row
           [group]="group"
+          [bid]="bid"
           [expanded]="expanded().has(group.symbol)"
           [alternate]="groupIndex % 2 === 1"
           (toggleRequested)="toggle(group.symbol)"
           (closeRequested)="closeGroup(group.symbol)"
         ></tr>
         @if (expanded().has(group.symbol)) {
-          @for (row of group.rows; track row.order.id) {
+          @for (order of group.orders; track order.id) {
             <tr
               app-order-detail-row
-              [row]="row"
+              [order]="order"
+              [bid]="bid"
               [alternate]="groupIndex % 2 === 1"
-              (closeRequested)="closeOrder(row.order.id)"
+              (closeRequested)="closeOrder(order.id)"
             ></tr>
           }
         }

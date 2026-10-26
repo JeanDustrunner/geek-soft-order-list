@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ApplicationRef } from '@angular/core';
+import { ApplicationRef, computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrdersStore } from './orders.store';
@@ -106,7 +106,7 @@ describe('OrdersStore', () => {
         ]),
       );
 
-      expect(store.quotes()['BTCUSD'].bid).toBe(101);
+      expect(store.bidOf('BTCUSD')()).toBe(101);
     });
 
     it('overwrites only the symbols a later batch mentions', async () => {
@@ -123,17 +123,97 @@ describe('OrdersStore', () => {
 
       FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 111 }]));
 
-      expect(store.quotes()['BTCUSD'].bid).toBe(111);
-      expect(store.quotes()['ETHUSD'].bid).toBe(200);
+      expect(store.bidOf('BTCUSD')()).toBe(111);
+      expect(store.bidOf('ETHUSD')()).toBe(200);
     });
 
-    it('recomputes profit from a new quote without anyone asking it to', async () => {
-      await load([anOrderDto({ symbol: 'BTCUSD', side: 'BUY', openPrice: 100, size: 2 })]);
-      expect(store.groups()[0].sumProfit).toBeNull();
+    it('exposes the bid of a symbol before its first quote, and fills it in later', async () => {
+      await load([anOrderDto({ symbol: 'BTCUSD' })]);
+      const bid = store.bidOf('BTCUSD');
+      expect(bid()).toBeUndefined();
 
       FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
 
-      expect(store.groups()[0].sumProfit).toBeCloseTo(20, 10);
+      expect(bid()).toBe(110);
+    });
+
+    it('gives the form the bid of the watched symbol, never of the previous one', async () => {
+      await load([anOrderDto({ symbol: 'BTCUSD' })]);
+      FakeWebSocket.last.receive(
+        quotesFrame([
+          { s: 'BTCUSD', b: 100 },
+          { s: 'ETHUSD', b: 200 },
+        ]),
+      );
+
+      store.watchSymbol('ETHUSD');
+      expect(store.watchedBid()).toBe(200);
+
+      store.watchSymbol('XRPUSD');
+      expect(store.watchedBid()).toBeUndefined();
+
+      store.watchSymbol(null);
+      expect(store.watchedBid()).toBeUndefined();
+    });
+  });
+
+  describe('update granularity', () => {
+    const countRuns = (read: () => unknown) => {
+      let runs = 0;
+      const tracked = computed(() => {
+        runs++;
+        return read();
+      });
+      return () => {
+        tracked();
+        return runs;
+      };
+    };
+
+    it('does not regroup the orders when a quote arrives', async () => {
+      await load([
+        anOrderDto({ id: 1, symbol: 'BTCUSD' }),
+        anOrderDto({ id: 2, symbol: 'ETHUSD' }),
+      ]);
+      const before = store.groups();
+
+      FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
+
+      expect(store.groups()).toBe(before);
+    });
+
+    it('does not notify the bid of a symbol the quote is not about', async () => {
+      await load([
+        anOrderDto({ id: 1, symbol: 'BTCUSD' }),
+        anOrderDto({ id: 2, symbol: 'ETHUSD' }),
+      ]);
+      const ethRuns = countRuns(store.bidOf('ETHUSD'));
+      expect(ethRuns()).toBe(1);
+
+      FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
+
+      expect(ethRuns()).toBe(1);
+    });
+
+    it('notifies nothing when a quote repeats the current bid', async () => {
+      await load([anOrderDto({ symbol: 'BTCUSD' })]);
+      FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
+      const btcRuns = countRuns(store.bidOf('BTCUSD'));
+      expect(btcRuns()).toBe(1);
+
+      FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
+
+      expect(btcRuns()).toBe(1);
+    });
+
+    it('notifies the bid of the symbol the quote is about', async () => {
+      await load([anOrderDto({ symbol: 'BTCUSD' })]);
+      const btcRuns = countRuns(store.bidOf('BTCUSD'));
+      expect(btcRuns()).toBe(1);
+
+      FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
+
+      expect(btcRuns()).toBe(2);
     });
   });
 
@@ -220,7 +300,7 @@ describe('OrdersStore', () => {
       const closed = store.closeOrder(11);
 
       expect(closed).toEqual([11]);
-      expect(store.groups()[0].rows.map((row) => row.order.id)).toEqual([12]);
+      expect(store.groups()[0].orders.map((order) => order.id)).toEqual([12]);
     });
 
     it('reports nothing for an order that is already gone', async () => {
@@ -331,7 +411,7 @@ describe('OrdersStore', () => {
       TestBed.resetTestingModule();
 
       expect(() => socket.receive(quotesFrame([{ s: 'BTCUSD', b: 100 }]))).not.toThrow();
-      expect(store.quotes()).toEqual({});
+      expect(store.bidOf('BTCUSD')()).toBeUndefined();
     });
   });
 });

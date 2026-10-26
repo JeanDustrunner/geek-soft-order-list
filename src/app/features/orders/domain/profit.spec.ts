@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { calcProfit } from './profit';
+import { calcProfit, sumProfit } from './profit';
+import { groupOrdersBySymbol } from './aggregate';
 import { anOrder } from '../testing/builders';
 
 describe('calcProfit', () => {
@@ -51,5 +52,30 @@ describe('calcProfit', () => {
 
   it('reports an unknown profit, not zero, when the instrument has no contract size', () => {
     expect(calcProfit(anOrder({ contractSize: null }), 110)).toBeNull();
+  });
+});
+
+describe('sumProfit', () => {
+  it('keeps the group row consistent: its profit equals the formula applied to the aggregate', () => {
+    const orders = [
+      anOrder({ symbol: 'BTCUSD', side: 'BUY', openPrice: 100, size: 10, contractSize: 1 }),
+      anOrder({ symbol: 'BTCUSD', side: 'BUY', openPrice: 200, size: 1, contractSize: 1 }),
+    ];
+    const [group] = groupOrdersBySymbol(orders);
+
+    const profit = sumProfit(orders, 110);
+
+    expect(profit).toBeCloseTo((110 - group.avgOpenPrice) * group.sumSize * 1, 8);
+    expect(profit).toBeCloseTo(10, 8);
+  });
+
+  it('reports an unknown group profit when any of its orders has none', () => {
+    const orders = [anOrder({ contractSize: 1 }), anOrder({ contractSize: null })];
+
+    expect(sumProfit(orders, 110)).toBeNull();
+  });
+
+  it('reports an unknown group profit while the symbol has no quote yet', () => {
+    expect(sumProfit([anOrder()], undefined)).toBeNull();
   });
 });

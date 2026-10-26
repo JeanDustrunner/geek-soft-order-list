@@ -10,8 +10,7 @@ const aGroup = (overrides: Partial<SymbolGroup> = {}): SymbolGroup => ({
   sumSize: 0.06,
   avgOpenPrice: 104_837.47,
   sumSwap: -1.25,
-  sumProfit: 12.5,
-  rows: [{ order: anOrder(), profit: 12.5 }],
+  orders: [anOrder({ id: 1 }), anOrder({ id: 2 })],
   ...overrides,
 });
 
@@ -21,9 +20,10 @@ describe('OrderGroupRow', () => {
   const cells = () => [...fixture.nativeElement.querySelectorAll('td')] as HTMLElement[];
   const textOf = (index: number) => cells()[index].textContent?.trim() ?? '';
 
-  const render = async (group: SymbolGroup, expanded = false) => {
+  const render = async (group: SymbolGroup, expanded = false, bid?: number) => {
     fixture.componentRef.setInput('group', group);
     fixture.componentRef.setInput('expanded', expanded);
+    fixture.componentRef.setInput('bid', bid);
     await fixture.whenStable();
   };
 
@@ -54,7 +54,12 @@ describe('OrderGroupRow', () => {
   });
 
   it('shows the summed size, summed swap and summed profit of the group (R4)', async () => {
-    await render(aGroup({ sumSize: 0.06, sumSwap: -1.25, sumProfit: 12.5 }));
+    const orders = [
+      anOrder({ id: 1, side: 'BUY', openPrice: 100, size: 1, contractSize: 1 }),
+      anOrder({ id: 2, side: 'BUY', openPrice: 100, size: 1, contractSize: 1 }),
+    ];
+
+    await render(aGroup({ sumSize: 0.06, sumSwap: -1.25, orders }), false, 106.25);
 
     expect(textOf(5)).toBe('0.06');
     expect(textOf(8)).toBe('-1.25');
@@ -62,7 +67,7 @@ describe('OrderGroupRow', () => {
   });
 
   it('shows a dash instead of a profit while the group has no quote', async () => {
-    await render(aGroup({ sumProfit: null }));
+    await render(aGroup());
 
     expect(textOf(9)).toBe('—');
   });

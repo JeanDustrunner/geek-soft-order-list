@@ -5,11 +5,13 @@ import {
   inject,
   Injectable,
   linkedSignal,
+  Signal,
   signal,
+  WritableSignal,
 } from '@angular/core';
 import { OrdersDataService } from './orders-data.service';
 import { WebSocketService } from './web-socket.service';
-import { NewOrderInput, Order, Quote } from '../domain/models';
+import { NewOrderInput, Order } from '../domain/models';
 import { groupOrdersBySymbol } from '../domain/aggregate';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -20,17 +22,20 @@ export class OrdersStore {
 
   // State
   readonly #orders = linkedSignal(() => this.#data.initialOrders());
-  readonly #quotes = signal<Readonly<Record<string, Quote>>>({});
+  readonly #bids = new Map<string, WritableSignal<number | undefined>>();
   #addedCount = 0;
 
   // Public Reading
   readonly isLoading = this.#data.isLoading;
   readonly error = this.#data.error;
-  readonly quotes = this.#quotes.asReadonly();
   readonly formSymbols = this.#data.fileSymbols;
-  readonly groups = computed(() => groupOrdersBySymbol(this.#orders(), this.#quotes()));
+  readonly groups = computed(() => groupOrdersBySymbol(this.#orders()));
 
   readonly #watchedSymbol = signal<string | null>(null);
+  readonly watchedBid = computed(() => {
+    const symbol = this.#watchedSymbol();
+    return symbol ? this.bidOf(symbol)() : undefined;
+  });
 
   readonly #subscribedSymbols = computed(
     () => {
@@ -49,15 +54,24 @@ export class OrdersStore {
     this.#ws.connect();
     inject(DestroyRef).onDestroy(() => this.#ws.disconnect());
 
-    this.#ws.quotes$.pipe(takeUntilDestroyed()).subscribe((data) =>
-      this.#quotes.update((prev) => {
-        const next: Record<string, Quote> = { ...prev };
-        for (const quote of data) next[quote.symbol] = quote;
-        return next;
-      }),
-    );
+    this.#ws.quotes$.pipe(takeUntilDestroyed()).subscribe((data) => {
+      for (const quote of data) this.#bidSignal(quote.symbol).set(quote.bid);
+    });
 
     effect(() => this.#ws.setSymbols(this.#subscribedSymbols()));
+  }
+
+  bidOf(symbol: string): Signal<number | undefined> {
+    return this.#bidSignal(symbol).asReadonly();
+  }
+
+  #bidSignal(symbol: string): WritableSignal<number | undefined> {
+    let bid = this.#bids.get(symbol);
+    if (!bid) {
+      bid = signal<number | undefined>(undefined);
+      this.#bids.set(symbol, bid);
+    }
+    return bid;
   }
 
   watchSymbol(symbol: string | null): void {

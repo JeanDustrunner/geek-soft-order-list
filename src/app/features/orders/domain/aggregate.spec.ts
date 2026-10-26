@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { groupOrdersBySymbol } from './aggregate';
-import { anOrder, aQuote, quotesFor } from '../testing/builders';
+import { anOrder } from '../testing/builders';
 
 describe('groupOrdersBySymbol', () => {
   it('produces no groups for an empty order list', () => {
-    expect(groupOrdersBySymbol([], {})).toEqual([]);
+    expect(groupOrdersBySymbol([])).toEqual([]);
   });
 
   it('groups orders that share a symbol and counts them', () => {
@@ -14,7 +14,7 @@ describe('groupOrdersBySymbol', () => {
       anOrder({ id: 3, symbol: 'ETHUSD' }),
     ];
 
-    const groups = groupOrdersBySymbol(orders, {});
+    const groups = groupOrdersBySymbol(orders);
 
     expect(groups.map((group) => [group.symbol, group.count])).toEqual([
       ['BTCUSD', 2],
@@ -25,7 +25,7 @@ describe('groupOrdersBySymbol', () => {
   it('orders groups alphabetically, independent of the input order', () => {
     const orders = [anOrder({ symbol: 'ETHUSD' }), anOrder({ symbol: 'BTCUSD' })];
 
-    const groups = groupOrdersBySymbol(orders, {});
+    const groups = groupOrdersBySymbol(orders);
 
     expect(groups.map((group) => group.symbol)).toEqual(['BTCUSD', 'ETHUSD']);
   });
@@ -36,7 +36,7 @@ describe('groupOrdersBySymbol', () => {
       anOrder({ symbol: 'BTCUSD', size: 0.01, swap: 0.25 }),
     ];
 
-    const [group] = groupOrdersBySymbol(orders, {});
+    const [group] = groupOrdersBySymbol(orders);
 
     expect(group.sumSize).toBeCloseTo(0.06, 10);
     expect(group.sumSwap).toBeCloseTo(-1.25, 10);
@@ -48,51 +48,17 @@ describe('groupOrdersBySymbol', () => {
       anOrder({ symbol: 'BTCUSD', openPrice: 200, size: 1 }),
     ];
 
-    const [group] = groupOrdersBySymbol(orders, {});
+    const [group] = groupOrdersBySymbol(orders);
 
     expect(group.avgOpenPrice).toBeCloseTo(1200 / 11, 10);
   });
 
-  it('keeps the group row consistent: its profit equals the formula applied to the aggregate', () => {
-    const orders = [
-      anOrder({ symbol: 'BTCUSD', side: 'BUY', openPrice: 100, size: 10, contractSize: 1 }),
-      anOrder({ symbol: 'BTCUSD', side: 'BUY', openPrice: 200, size: 1, contractSize: 1 }),
-    ];
-    const quotes = quotesFor(aQuote({ symbol: 'BTCUSD', bid: 110 }));
-
-    const [group] = groupOrdersBySymbol(orders, quotes);
-
-    expect(group.sumProfit).toBeCloseTo((110 - group.avgOpenPrice) * group.sumSize * 1, 8);
-    expect(group.sumProfit).toBeCloseTo(10, 8);
-  });
-
-  it('reports an unknown group profit when any of its orders has none', () => {
-    const orders = [
-      anOrder({ symbol: 'BTCUSD', contractSize: 1 }),
-      anOrder({ symbol: 'BTCUSD', contractSize: null }),
-    ];
-    const quotes = quotesFor(aQuote({ symbol: 'BTCUSD', bid: 110 }));
-
-    const [group] = groupOrdersBySymbol(orders, quotes);
-
-    expect(group.sumProfit).toBeNull();
-  });
-
-  it('reports an unknown profit for a group whose symbol has no quote', () => {
-    const quotes = quotesFor(aQuote({ symbol: 'ETHUSD', bid: 2000 }));
-
-    const [group] = groupOrdersBySymbol([anOrder({ symbol: 'BTCUSD' })], quotes);
-
-    expect(group.sumProfit).toBeNull();
-    expect(group.rows[0].profit).toBeNull();
-  });
-
-  it('exposes each order as its own row inside the group', () => {
+  it('keeps the orders of a group in their input order', () => {
     const orders = [anOrder({ id: 7, symbol: 'BTCUSD' }), anOrder({ id: 9, symbol: 'BTCUSD' })];
 
-    const [group] = groupOrdersBySymbol(orders, {});
+    const [group] = groupOrdersBySymbol(orders);
 
-    expect(group.rows.map((row) => row.order.id)).toEqual([7, 9]);
+    expect(group.orders.map((order) => order.id)).toEqual([7, 9]);
   });
 
   it('yields a non-finite average when the sizes of a group cancel out to zero', () => {
@@ -101,7 +67,7 @@ describe('groupOrdersBySymbol', () => {
       anOrder({ symbol: 'BTCUSD', openPrice: 100, size: -1 }),
     ];
 
-    const [group] = groupOrdersBySymbol(orders, {});
+    const [group] = groupOrdersBySymbol(orders);
 
     expect(Number.isNaN(group.avgOpenPrice)).toBe(true);
   });

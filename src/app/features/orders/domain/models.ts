@@ -42,18 +42,13 @@ export interface Quote {
   readonly ask?: number;
   readonly time?: number;
 }
-export interface OrderRow {
-  readonly order: Order;
-  readonly profit: number | null;
-}
 export interface SymbolGroup {
   readonly symbol: string;
   readonly count: number;
   readonly sumSize: number;
   readonly avgOpenPrice: number;
   readonly sumSwap: number;
-  readonly sumProfit: number | null;
-  readonly rows: readonly OrderRow[];
+  readonly orders: readonly Order[];
 }
 export interface OrderFormModel {
   readonly symbol: string;
