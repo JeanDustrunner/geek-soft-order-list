@@ -1,4 +1,4 @@
-import { InjectionToken } from "@angular/core";
+import { InjectionToken } from '@angular/core';
 
 export interface OrdersFeatureConfig {
   readonly ordersUrl: string;
@@ -6,4 +6,6 @@ export interface OrdersFeatureConfig {
   readonly contractTypesUrl: string;
   readonly quotesWsUrl: string;
 }
-export const ORDERS_FEATURE_CONFIG = new InjectionToken<OrdersFeatureConfig>('ORDERS_FEATURE_CONFIG');
+export const ORDERS_FEATURE_CONFIG = new InjectionToken<OrdersFeatureConfig>(
+  'ORDERS_FEATURE_CONFIG',
+);

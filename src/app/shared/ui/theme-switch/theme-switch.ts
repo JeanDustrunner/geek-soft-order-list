@@ -1,5 +1,5 @@
-import { Component, input, output } from "@angular/core";
-import { isThemeMode, ThemeMode } from "../../util/theme-mode";
+import { Component, input, output } from '@angular/core';
+import { isThemeMode, ThemeMode } from '../../util/theme-mode';
 
 @Component({
   selector: 'app-theme-switch',

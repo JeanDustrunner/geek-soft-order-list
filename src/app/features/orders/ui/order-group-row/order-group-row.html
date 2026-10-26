@@ -1,33 +1,33 @@
 <td class="indicator">
-    <span aria-hidden="true">{{ expanded() ? '▾' : '▸' }}</span>
+  <span aria-hidden="true">{{ expanded() ? '▾' : '▸' }}</span>
 </td>
 <td>
-    <button type="button" class="expand" [attr.aria-expanded]="expanded()">
-        {{ group().symbol }}
-    </button>
+  <button type="button" class="expand" [attr.aria-expanded]="expanded()">
+    {{ group().symbol }}
+  </button>
 </td>
 <td>
-    <span class="badge">{{ group().count }}</span>
-</td>
-<td></td>
-<td></td>
-<td>
-    {{ group().sumSize | number: '1.0-2' }}
+  <span class="badge">{{ group().count }}</span>
 </td>
 <td></td>
+<td></td>
 <td>
-    {{ group().avgOpenPrice | number: '1.2-5' }}
+  {{ group().sumSize | number: '1.0-2' }}
+</td>
+<td></td>
+<td>
+  {{ group().avgOpenPrice | number: '1.2-5' }}
 </td>
 <td>
-    {{ group().sumSwap | number: '1.2-2' }}
+  {{ group().sumSwap | number: '1.2-2' }}
 </td>
 <td [class]="group().sumProfit | profitClass">
-    {{ (group().sumProfit | number: '1.2-2') ?? '—' }}
+  {{ (group().sumProfit | number: '1.2-2') ?? '—' }}
 </td>
 <td>
-    <app-close-button
-        [label]="'Close ' + group().symbol + ' group.'"
-        variant="group"
-        (closeRequested)="closeRequested.emit()"
-    />
+  <app-close-button
+    [label]="'Close ' + group().symbol + ' group.'"
+    variant="group"
+    (closeRequested)="closeRequested.emit()"
+  />
 </td>

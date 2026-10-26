@@ -1,5 +1,5 @@
-import { computed, effect, Service, signal } from "@angular/core";
-import { ThemeMode } from "../shared/util/theme-mode";
+import { computed, effect, Service, signal } from '@angular/core';
+import { ThemeMode } from '../shared/util/theme-mode';
 
 @Service()
 export class ThemeService {
@@ -13,8 +13,8 @@ export class ThemeService {
   });
 
   constructor() {
-    this.#media.addEventListener('change', e => this.#systemDark.set(e.matches));
-    
+    this.#media.addEventListener('change', (e) => this.#systemDark.set(e.matches));
+
     effect(() => {
       const mode = this.mode();
       const root = document.documentElement;
@@ -27,7 +27,7 @@ export class ThemeService {
           localStorage.setItem('theme', mode);
         }
       } catch {
-        console.warn('WARNING: Unable to set theme.')
+        console.warn('WARNING: Unable to set theme.');
       }
     });
   }

@@ -8,8 +8,16 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,html,scss}\""
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,html}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{scss,json,js}": "prettier --write"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
@@ -19,7 +27,6 @@
     "@angular/core": "^22.1.0",
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
-    "@angular/router": "^22.1.0",
     "ngx-sonner": "^3.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -32,7 +39,9 @@
     "angular-eslint": "22.5.0",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
     "jsdom": "^28.0.0",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "8.69.0",

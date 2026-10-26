@@ -57,7 +57,9 @@ describe('OrdersStore', () => {
     httpMock
       .expectOne(config.instrumentsUrl)
       .flush(symbols.map((symbol) => anInstrument({ symbol, contractType: 0 })));
-    httpMock.expectOne(config.contractTypesUrl).flush([aContractType({ contractType: 0, contractSize: 1 })]);
+    httpMock
+      .expectOne(config.contractTypesUrl)
+      .flush([aContractType({ contractType: 0, contractSize: 1 })]);
     await stabilize();
     FakeWebSocket.last.open();
     await stabilize();
@@ -108,7 +110,10 @@ describe('OrdersStore', () => {
     });
 
     it('overwrites only the symbols a later batch mentions', async () => {
-      await load([anOrderDto({ id: 1, symbol: 'BTCUSD' }), anOrderDto({ id: 2, symbol: 'ETHUSD' })]);
+      await load([
+        anOrderDto({ id: 1, symbol: 'BTCUSD' }),
+        anOrderDto({ id: 2, symbol: 'ETHUSD' }),
+      ]);
       FakeWebSocket.last.receive(
         quotesFrame([
           { s: 'BTCUSD', b: 100 },
@@ -123,9 +128,7 @@ describe('OrdersStore', () => {
     });
 
     it('recomputes profit from a new quote without anyone asking it to', async () => {
-      await load([
-        anOrderDto({ symbol: 'BTCUSD', side: 'BUY', openPrice: 100, size: 2 }),
-      ]);
+      await load([anOrderDto({ symbol: 'BTCUSD', side: 'BUY', openPrice: 100, size: 2 })]);
       expect(store.groups()[0].sumProfit).toBeNull();
 
       FakeWebSocket.last.receive(quotesFrame([{ s: 'BTCUSD', b: 110 }]));
@@ -136,7 +139,10 @@ describe('OrdersStore', () => {
 
   describe('subscription sync', () => {
     it('subscribes every symbol that has orders once the socket opens', async () => {
-      await load([anOrderDto({ id: 1, symbol: 'ETHUSD' }), anOrderDto({ id: 2, symbol: 'BTCUSD' })]);
+      await load([
+        anOrderDto({ id: 1, symbol: 'ETHUSD' }),
+        anOrderDto({ id: 2, symbol: 'BTCUSD' }),
+      ]);
 
       expect(FakeWebSocket.last.frames).toEqual([
         { p: '/subscribe/addlist', d: ['BTCUSD', 'ETHUSD'] },
@@ -235,7 +241,10 @@ describe('OrdersStore', () => {
     });
 
     it('removes the whole group from the table', async () => {
-      await load([anOrderDto({ id: 11, symbol: 'BTCUSD' }), anOrderDto({ id: 12, symbol: 'ETHUSD' })]);
+      await load([
+        anOrderDto({ id: 11, symbol: 'BTCUSD' }),
+        anOrderDto({ id: 12, symbol: 'ETHUSD' }),
+      ]);
 
       store.closeGroup('BTCUSD');
 

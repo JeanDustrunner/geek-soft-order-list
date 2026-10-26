@@ -3,21 +3,21 @@
 } @else if (store.isLoading()) {
   <p>Loading...</p>
 } @else {
-    <button class="add-order" type="button" (click)="dialog.showModal(); formOpen.set(true)">
-      Add new order
-    </button>
+  <button class="add-order" type="button" (click)="dialog.showModal(); formOpen.set(true)">
+    Add new order
+  </button>
 
-    <dialog #dialog (close)="onFormClosed()">
-        @if (formOpen()) {
-            <app-order-form
-                [symbols]="store.formSymbols()"
-                [quotes]="store.quotes()"
-                (symbolSelected)="store.watchSymbol($event)"
-                (submitted)="addOrder($event); dialog.close()"
-                (cancelled)="dialog.close()"
-            />
-        }
-    </dialog>
+  <dialog #dialog (close)="onFormClosed()">
+    @if (formOpen()) {
+      <app-order-form
+        [symbols]="store.formSymbols()"
+        [quotes]="store.quotes()"
+        (symbolSelected)="store.watchSymbol($event)"
+        (submitted)="addOrder($event); dialog.close()"
+        (cancelled)="dialog.close()"
+      />
+    }
+  </dialog>
   <table>
     <thead>
       <tr>
@@ -37,7 +37,7 @@
     @for (group of store.groups(); track group.symbol; let groupIndex = $index) {
       <tbody>
         <tr
-          appOrderGroupRow
+          app-order-group-row
           [group]="group"
           [expanded]="expanded().has(group.symbol)"
           [alternate]="groupIndex % 2 === 1"
@@ -47,7 +47,7 @@
         @if (expanded().has(group.symbol)) {
           @for (row of group.rows; track row.order.id) {
             <tr
-              appOrderDetailRow
+              app-order-detail-row
               [row]="row"
               [alternate]="groupIndex % 2 === 1"
               (closeRequested)="closeOrder(row.order.id)"

@@ -28,10 +28,9 @@ describe('OrdersTableContainer', () => {
   const queryAll = (selector: string) =>
     [...fixture.nativeElement.querySelectorAll(selector)] as HTMLElement[];
 
-  const groupRows = () => queryAll('tr[appOrderGroupRow]');
-  const detailRows = () => queryAll('tr[appOrderDetailRow]');
-  const profitOf = (row: HTMLElement) =>
-    (row.querySelectorAll('td')[9]?.textContent ?? '').trim();
+  const groupRows = () => queryAll('tr[app-order-group-row]');
+  const detailRows = () => queryAll('tr[app-order-detail-row]');
+  const profitOf = (row: HTMLElement) => (row.querySelectorAll('td')[9]?.textContent ?? '').trim();
 
   const stabilize = async () => {
     TestBed.tick();
