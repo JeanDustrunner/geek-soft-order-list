@@ -225,4 +225,42 @@ describe('WebSocketService', () => {
       expect(FakeWebSocket.instances.length).toBe(1);
     });
   });
+
+  describe('connection status', () => {
+    it('reports closed before anyone connects', () => {
+      expect(service.status()).toBe('closed');
+    });
+
+    it('reports connecting until the socket opens, then open', () => {
+      service.connect();
+      expect(service.status()).toBe('connecting');
+
+      FakeWebSocket.last.open();
+
+      expect(service.status()).toBe('open');
+    });
+
+    it('reports reconnecting after an unexpected drop, until the retry opens', () => {
+      service.connect();
+      FakeWebSocket.last.open();
+
+      FakeWebSocket.last.drop();
+      expect(service.status()).toBe('reconnecting');
+
+      vi.advanceTimersByTime(1_000);
+      expect(service.status()).toBe('reconnecting');
+
+      FakeWebSocket.last.open();
+      expect(service.status()).toBe('open');
+    });
+
+    it('reports closed after a deliberate disconnect, not reconnecting', () => {
+      service.connect();
+      FakeWebSocket.last.open();
+
+      service.disconnect();
+
+      expect(service.status()).toBe('closed');
+    });
+  });
 });

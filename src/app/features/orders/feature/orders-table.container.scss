@@ -32,6 +32,10 @@ tbody + tbody {
   background: var(--row-hover);
 }
 
+app-connection-status {
+  margin-left: 1rem;
+}
+
 dialog {
   padding: 1.5rem;
   color: var(--fg);

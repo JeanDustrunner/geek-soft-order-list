@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrdersDataService } from './orders-data.service';
 import { ORDERS_FEATURE_CONFIG } from './orders-feature.config';
 import { aContractType, anInstrument, anOrderDto } from '../testing/builders';
@@ -34,6 +34,7 @@ describe('OrdersDataService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    vi.restoreAllMocks();
   });
 
   const respond = async (options: {
@@ -102,6 +103,27 @@ describe('OrdersDataService', () => {
     });
 
     expect(service.fileSymbols()).toEqual(['BTCUSD', 'ETHUSD']);
+  });
+
+  describe('validating the responses', () => {
+    it('drops an invalid record and warns how many were skipped', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      await respond({
+        orders: { data: [anOrderDto({ id: 1, symbol: 'BTCUSD' }), { id: 'two' }] },
+        instruments: [anInstrument({ symbol: 'BTCUSD', contractType: 0 })],
+        contractTypes: [aContractType({ contractType: 0, contractSize: 1 })],
+      });
+
+      expect(service.initialOrders().map((order) => order.id)).toEqual([1]);
+      expect(warn).toHaveBeenCalledWith('Skipped 1 invalid orders record(s).');
+    });
+
+    it('surfaces a response of the wrong shape as an error, not as an empty table', async () => {
+      await respond({ instruments: { not: 'a list' } });
+
+      expect(service.error()).toBeDefined();
+    });
   });
 
   describe('when one source fails', () => {

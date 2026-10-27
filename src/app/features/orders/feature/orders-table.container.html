@@ -6,6 +6,7 @@
   <button class="add-order" type="button" (click)="dialog.showModal(); formOpen.set(true)">
     Add new order
   </button>
+  <app-connection-status [status]="store.connectionStatus()" />
 
   <dialog #dialog (close)="onFormClosed()">
     @if (formOpen()) {

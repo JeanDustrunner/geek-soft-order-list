@@ -28,6 +28,7 @@ export class OrdersStore {
   // Public Reading
   readonly isLoading = this.#data.isLoading;
   readonly error = this.#data.error;
+  readonly connectionStatus = this.#ws.status;
   readonly formSymbols = this.#data.fileSymbols;
   readonly groups = computed(() => groupOrdersBySymbol(this.#orders()));
 

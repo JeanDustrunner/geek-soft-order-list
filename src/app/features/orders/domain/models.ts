@@ -1,4 +1,5 @@
 export type Side = 'BUY' | 'SELL';
+export type ConnectionStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
 // DTO
 export interface OrderDto {

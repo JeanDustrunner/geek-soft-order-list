@@ -4,13 +4,14 @@ import { OrdersDataService } from '../data-access/orders-data.service';
 import { OrdersStore } from '../data-access/orders.store';
 import { WebSocketService } from '../data-access/web-socket.service';
 import { NewOrderInput } from '../domain/models';
+import { ConnectionStatusBadge } from '../ui/connection-status/connection-status';
 import { OrderGroupRow } from '../ui/order-group-row/order-group-row';
 import { OrderDetailRow } from '../ui/order-detail-row/order-detail-row';
 import { OrderForm } from '../ui/order-form/order-form';
 
 @Component({
   selector: 'app-orders-table',
-  imports: [OrderGroupRow, OrderDetailRow, OrderForm],
+  imports: [ConnectionStatusBadge, OrderGroupRow, OrderDetailRow, OrderForm],
   providers: [OrdersDataService, WebSocketService, OrdersStore],
   templateUrl: './orders-table.container.html',
   styleUrl: './orders-table.container.scss',

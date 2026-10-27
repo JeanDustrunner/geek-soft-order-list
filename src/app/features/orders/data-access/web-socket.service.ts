@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Quote } from '../domain/models';
+import { ConnectionStatus, Quote } from '../domain/models';
 import { parseQuotesMessage } from '../domain/quotes.parser';
 import { ORDERS_FEATURE_CONFIG } from './orders-feature.config';
 
@@ -9,6 +9,8 @@ export class WebSocketService {
   readonly #url = inject(ORDERS_FEATURE_CONFIG).quotesWsUrl;
   readonly #quotes = new Subject<Quote[]>();
   readonly quotes$ = this.#quotes.asObservable();
+  readonly #status = signal<ConnectionStatus>('closed');
+  readonly status = this.#status.asReadonly();
 
   #socket: WebSocket | null = null;
   #desired = new Set<string>();
@@ -18,6 +20,7 @@ export class WebSocketService {
 
   connect(): void {
     this.#stopped = false;
+    this.#status.set('connecting');
     this.#open();
   }
 
@@ -26,6 +29,7 @@ export class WebSocketService {
     clearTimeout(this.#reconnectTimer);
     this.#socket?.close();
     this.#socket = null;
+    this.#status.set('closed');
   }
 
   setSymbols(symbols: readonly string[]): void {
@@ -41,6 +45,7 @@ export class WebSocketService {
     const socket = new WebSocket(this.#url);
     socket.onopen = () => {
       this.#retries = 0;
+      this.#status.set('open');
       this.#send('/subscribe/addlist', [...this.#desired]);
     };
     socket.onmessage = (event) => {
@@ -49,6 +54,7 @@ export class WebSocketService {
     };
     socket.onclose = () => {
       if (this.#stopped) return;
+      this.#status.set('reconnecting');
       const delay = Math.min(30_000, 1_000 * 2 ** this.#retries++);
       this.#reconnectTimer = setTimeout(() => this.#open(), delay);
     };

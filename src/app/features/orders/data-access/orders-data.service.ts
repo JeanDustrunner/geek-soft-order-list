@@ -1,6 +1,12 @@
 import { httpResource } from '@angular/common/http';
 import { computed, inject, Injectable } from '@angular/core';
 import { ContractTypeDto, InstrumentDto, Order, OrderDto } from '../domain/models';
+import {
+  parseContractTypes,
+  parseInstruments,
+  parseOrders,
+  ParsedList,
+} from '../domain/http.parsers';
 import { createContractSizeLookup, transformToOrder } from '../domain/orders.mapper';
 import { ORDERS_FEATURE_CONFIG } from './orders-feature.config';
 
@@ -9,10 +15,14 @@ export class OrdersDataService {
   readonly #cfg = inject(ORDERS_FEATURE_CONFIG);
 
   readonly ordersRes = httpResource<OrderDto[]>(() => this.#cfg.ordersUrl, {
-    parse: (raw) => (raw as { data: OrderDto[] }).data,
+    parse: (raw) => keepValid(parseOrders(raw), 'orders'),
   });
-  readonly instrumentsRes = httpResource<InstrumentDto[]>(() => this.#cfg.instrumentsUrl);
-  readonly contractTypesRes = httpResource<ContractTypeDto[]>(() => this.#cfg.contractTypesUrl);
+  readonly instrumentsRes = httpResource<InstrumentDto[]>(() => this.#cfg.instrumentsUrl, {
+    parse: (raw) => keepValid(parseInstruments(raw), 'instruments'),
+  });
+  readonly contractTypesRes = httpResource<ContractTypeDto[]>(() => this.#cfg.contractTypesUrl, {
+    parse: (raw) => keepValid(parseContractTypes(raw), 'contract types'),
+  });
 
   readonly isLoading = computed(
     () =>
@@ -47,4 +57,9 @@ export class OrdersDataService {
       ? [...new Set(orders.value().map((order) => order.symbol))].sort()
       : [];
   });
+}
+
+function keepValid<T>({ items, skipped }: ParsedList<T>, source: string): T[] {
+  if (skipped > 0) console.warn(`Skipped ${skipped} invalid ${source} record(s).`);
+  return items;
 }

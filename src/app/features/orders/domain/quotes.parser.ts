@@ -1,6 +1,5 @@
 import { Quote, QuoteDto } from './models';
-
-const isRecord = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null;
+import { isRecord } from './guards';
 
 const isQuoteDto = (x: unknown): x is QuoteDto =>
   isRecord(x) &&
