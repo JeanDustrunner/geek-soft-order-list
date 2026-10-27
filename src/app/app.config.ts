@@ -1,16 +1,12 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideOrdersFeature } from './features/orders';
+import { ordersConfig } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
-    provideOrdersFeature({
-      ordersUrl: 'https://geeksoft.pl/assets/2026-task/order-data.json',
-      instrumentsUrl: 'https://geeksoft.pl/assets/2026-task/instruments.json',
-      contractTypesUrl: 'https://geeksoft.pl/assets/2026-task/contract-types.json',
-      quotesWsUrl: 'wss://webquotes.geeksoft.pl/websocket/quotes',
-    }),
+    provideOrdersFeature(ordersConfig),
   ],
 };

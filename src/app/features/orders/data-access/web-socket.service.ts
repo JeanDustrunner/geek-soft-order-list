@@ -3,9 +3,10 @@ import { Subject } from 'rxjs';
 import { ConnectionStatus, Quote } from '../domain/models';
 import { parseQuotesMessage } from '../domain/quotes.parser';
 import { ORDERS_FEATURE_CONFIG } from './orders-feature.config';
+import { QuotesSource } from './quotes-source';
 
 @Injectable()
-export class WebSocketService {
+export class WebSocketService implements QuotesSource {
   readonly #url = inject(ORDERS_FEATURE_CONFIG).quotesWsUrl;
   readonly #quotes = new Subject<Quote[]>();
   readonly quotes$ = this.#quotes.asObservable();

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrdersStore } from './orders.store';
 import { OrdersDataService } from './orders-data.service';
 import { WebSocketService } from './web-socket.service';
+import { QuotesSource } from './quotes-source';
 import { ORDERS_FEATURE_CONFIG } from './orders-feature.config';
 import { FakeWebSocket } from '../testing/fake-web-socket';
 import { aContractType, anInstrument, anOrderDto } from '../testing/builders';
@@ -31,6 +32,7 @@ describe('OrdersStore', () => {
         provideHttpClientTesting(),
         OrdersDataService,
         WebSocketService,
+        { provide: QuotesSource, useExisting: WebSocketService },
         OrdersStore,
         { provide: ORDERS_FEATURE_CONFIG, useValue: config },
       ],

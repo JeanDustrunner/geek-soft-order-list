@@ -10,7 +10,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { OrdersDataService } from './orders-data.service';
-import { WebSocketService } from './web-socket.service';
+import { QuotesSource } from './quotes-source';
 import { NewOrderInput, Order } from '../domain/models';
 import { groupOrdersBySymbol } from '../domain/aggregate';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Injectable()
 export class OrdersStore {
   readonly #data = inject(OrdersDataService);
-  readonly #ws = inject(WebSocketService);
+  readonly #source = inject(QuotesSource);
 
   // State
   readonly #orders = linkedSignal(() => this.#data.initialOrders());
@@ -28,7 +28,7 @@ export class OrdersStore {
   // Public Reading
   readonly isLoading = this.#data.isLoading;
   readonly error = this.#data.error;
-  readonly connectionStatus = this.#ws.status;
+  readonly connectionStatus = this.#source.status;
   readonly formSymbols = this.#data.fileSymbols;
   readonly groups = computed(() => groupOrdersBySymbol(this.#orders()));
 
@@ -52,14 +52,14 @@ export class OrdersStore {
   );
 
   constructor() {
-    this.#ws.connect();
-    inject(DestroyRef).onDestroy(() => this.#ws.disconnect());
+    this.#source.connect();
+    inject(DestroyRef).onDestroy(() => this.#source.disconnect());
 
-    this.#ws.quotes$.pipe(takeUntilDestroyed()).subscribe((data) => {
+    this.#source.quotes$.pipe(takeUntilDestroyed()).subscribe((data) => {
       for (const quote of data) this.#bidSignal(quote.symbol).set(quote.bid);
     });
 
-    effect(() => this.#ws.setSymbols(this.#subscribedSymbols()));
+    effect(() => this.#source.setSymbols(this.#subscribedSymbols()));
   }
 
   bidOf(symbol: string): Signal<number | undefined> {

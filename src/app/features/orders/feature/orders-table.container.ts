@@ -1,7 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { toast } from 'ngx-sonner';
 import { OrdersDataService } from '../data-access/orders-data.service';
+import { ORDERS_FEATURE_CONFIG } from '../data-access/orders-feature.config';
 import { OrdersStore } from '../data-access/orders.store';
+import { QuotesSource } from '../data-access/quotes-source';
+import { SimulatedQuotesService } from '../data-access/simulated-quotes.service';
 import { WebSocketService } from '../data-access/web-socket.service';
 import { NewOrderInput } from '../domain/models';
 import { ConnectionStatusBadge } from '../ui/connection-status/connection-status';
@@ -12,7 +15,19 @@ import { OrderForm } from '../ui/order-form/order-form';
 @Component({
   selector: 'app-orders-table',
   imports: [ConnectionStatusBadge, OrderGroupRow, OrderDetailRow, OrderForm],
-  providers: [OrdersDataService, WebSocketService, OrdersStore],
+  providers: [
+    OrdersDataService,
+    WebSocketService,
+    SimulatedQuotesService,
+    {
+      provide: QuotesSource,
+      useFactory: () =>
+        inject(ORDERS_FEATURE_CONFIG).quotesSource === 'simulated'
+          ? inject(SimulatedQuotesService)
+          : inject(WebSocketService),
+    },
+    OrdersStore,
+  ],
   templateUrl: './orders-table.container.html',
   styleUrl: './orders-table.container.scss',
 })

@@ -69,6 +69,10 @@ td:nth-child(10) {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+th:nth-child(10),
+td:nth-child(10) {
+  width: 12ch;
+}
 th:nth-child(11),
 td:nth-child(11) {
   width: 1%;
