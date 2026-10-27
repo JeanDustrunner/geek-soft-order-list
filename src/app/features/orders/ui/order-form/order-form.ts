@@ -1,6 +1,6 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, input, linkedSignal, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { OrderFormModel, Side, NewOrderInput } from '../../domain/models';
+import { OrderFormModel, NewOrderInput } from '../../domain/models';
 import { form, required, validate, FormField, min } from '@angular/forms/signals';
 
 @Component({
@@ -16,12 +16,12 @@ export class OrderForm {
   readonly cancelled = output<void>();
   readonly symbolSelected = output<string>();
 
-  protected readonly model = signal<OrderFormModel>({
-    symbol: '',
-    side: 'BUY' as Side,
-    size: 0,
-    openPrice: 0,
-    openTime: toDateTimeLocal(Date.now()),
+  protected readonly model = linkedSignal<number | undefined, OrderFormModel>({
+    source: this.currentBid,
+    computation: (bid, previous) => ({
+      ...(previous?.value ?? initialModel()),
+      openPrice: bid ?? 0,
+    }),
   });
 
   protected readonly hasSymbol = computed(() => this.symbols().includes(this.model().symbol));
@@ -43,18 +43,8 @@ export class OrderForm {
     required(path.openTime);
   });
 
-  constructor() {
-    effect(() => {
-      const { openPrice } = this.model();
-      const bid = this.currentBid();
-      if (bid !== undefined && bid !== openPrice) {
-        this.model.update((model) => ({ ...model, openPrice: bid }));
-      }
-    });
-  }
-
   protected onSymbolChange(symbol: string): void {
-    this.model.update((model) => ({ ...model, symbol, openPrice: 0 }));
+    this.model.update((model) => ({ ...model, symbol }));
     if (this.symbols().includes(symbol)) this.symbolSelected.emit(symbol);
   }
 
@@ -69,6 +59,16 @@ export class OrderForm {
     const value = this.model();
     this.submitted.emit({ ...value, openTime: new Date(value.openTime).getTime() });
   }
+}
+
+function initialModel(): OrderFormModel {
+  return {
+    symbol: '',
+    side: 'BUY',
+    size: 0,
+    openPrice: 0,
+    openTime: toDateTimeLocal(Date.now()),
+  };
 }
 
 function toDateTimeLocal(ms: number): string {

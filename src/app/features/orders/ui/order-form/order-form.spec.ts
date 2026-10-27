@@ -227,6 +227,17 @@ describe('OrderForm', () => {
       expect(submitted[0].openPrice).toBeCloseTo(2134.69, 10);
     });
 
+    it('keeps what the user typed when the price moves', async () => {
+      await pickSymbol('ETHUSD');
+      await setBid(2134.69);
+      await typeSize('0.5');
+
+      await setBid(2200.0);
+      await submit();
+
+      expect(submitted[0]).toMatchObject({ size: 0.5, openPrice: 2200 });
+    });
+
     it('defaults the direction to BUY', async () => {
       await fillValidOrder();
 
