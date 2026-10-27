@@ -17,10 +17,10 @@
   {{ order().openPrice | number: '1.2-5' }}
 </td>
 <td>
-  {{ order().swap | number: '1.2-2' }}
+  {{ order().swap | money }}
 </td>
 <td [class]="profit() | profitClass">
-  {{ (profit() | number: '1.2-2') ?? '—' }}
+  {{ (profit() | money) ?? '—' }}
 </td>
 <td>
   <app-close-button

@@ -64,6 +64,12 @@ describe('OrderDetailRow', () => {
     expect(textOf(9)).toBe('-1,234.50');
   });
 
+  it('shows a small swap instead of rounding it away to 0.00 (review: precision)', async () => {
+    await render(anOrder({ swap: -0.00757409 }));
+
+    expect(textOf(8)).toBe('-0.0076');
+  });
+
   it('recalculates the profit when only the bid changes', async () => {
     const order = anOrder({ side: 'BUY', openPrice: 100, size: 1, contractSize: 1 });
     await render(order, 110);

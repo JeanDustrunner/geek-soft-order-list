@@ -3,11 +3,12 @@ import { Component, computed, input, output } from '@angular/core';
 import { SymbolGroup } from '../../domain/models';
 import { sumProfit } from '../../domain/profit';
 import { CloseButton } from '../close-button/close-button';
+import { MoneyPipe } from '../money.pipe';
 import { ProfitClassPipe } from '../profit-class.pipe';
 
 @Component({
   selector: 'tr[app-order-group-row]',
-  imports: [DecimalPipe, ProfitClassPipe, CloseButton],
+  imports: [DecimalPipe, MoneyPipe, ProfitClassPipe, CloseButton],
   host: { class: 'group-row', '(click)': 'toggleRequested.emit()', '[class.alt]': 'alternate()' },
   templateUrl: './order-group-row.html',
   styleUrl: './order-group-row.scss',

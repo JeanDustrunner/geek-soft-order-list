@@ -3,11 +3,12 @@ import { Order } from '../../domain/models';
 import { calcProfit } from '../../domain/profit';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { CloseButton } from '../close-button/close-button';
+import { MoneyPipe } from '../money.pipe';
 import { ProfitClassPipe } from '../profit-class.pipe';
 
 @Component({
   selector: 'tr[app-order-detail-row]',
-  imports: [DatePipe, DecimalPipe, ProfitClassPipe, CloseButton],
+  imports: [DatePipe, DecimalPipe, MoneyPipe, ProfitClassPipe, CloseButton],
   host: { '[class.alt]': 'alternate()' },
   templateUrl: './order-detail-row.html',
   styleUrl: './order-detail-row.scss',

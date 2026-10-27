@@ -23,4 +23,13 @@ describe('ProfitClassPipe', () => {
   it('leaves an unknown profit unpainted, because "—" is neither a gain nor a loss', () => {
     expect(pipe.transform(null)).toBe('');
   });
+
+  it('leaves a profit that displays as zero unpainted, so there is no red or green "0.00"', () => {
+    expect(pipe.transform(-1e-12)).toBe('');
+    expect(pipe.transform(1e-12)).toBe('');
+  });
+
+  it('paints a tiny profit that is still visible on screen', () => {
+    expect(pipe.transform(-0.004)).toBe('profit-negative');
+  });
 });
